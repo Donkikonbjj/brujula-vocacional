@@ -2,9 +2,8 @@
 
 import React, { useState } from 'react';
 import confetti from 'canvas-confetti';
-import { ArrowLeft, ArrowRight, Sparkles, Check, HelpCircle, User } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Sparkles, Check, Heart, User } from 'lucide-react';
 import { VOCATIONAL_QUESTIONS } from '@/data/questions';
-import { CAREERS_DATABASE } from '@/data/careers';
 import { calculateHollandResult } from '@/lib/riasec';
 import { AssessmentResult } from '@/types';
 
@@ -44,95 +43,68 @@ export default function TestVocacional({ onComplete }: TestVocacionalProps) {
   };
 
   const finishTest = () => {
-    // Trigger confetti
     try {
       confetti({
-        particleCount: 120,
-        spread: 70,
+        particleCount: 150,
+        spread: 90,
         origin: { y: 0.6 }
       });
-    } catch (e) {
-      // safe fallback
-    }
+    } catch (e) {}
 
-    const { scores, topCodes, codeString, primaryTrait, secondaryTrait, tertiaryTrait } =
-      calculateHollandResult(answers, VOCATIONAL_QUESTIONS);
-
-    // Match careers that share at least one of top 2 codes
-    const matchedCareers = CAREERS_DATABASE.filter((career) => {
-      return career.matchHolland.some((c) => topCodes.slice(0, 2).includes(c));
-    }).sort((a, b) => {
-      // prioritize careers matching top code
-      const aHasTop = a.matchHolland.includes(topCodes[0]) ? 1 : 0;
-      const bHasTop = b.matchHolland.includes(topCodes[0]) ? 1 : 0;
-      return bHasTop - aHasTop;
-    });
-
-    const result: AssessmentResult = {
-      scores,
-      topCodes,
-      codeString,
-      primaryTrait,
-      secondaryTrait,
-      tertiaryTrait,
-      matchedCareers,
-      completedAt: new Date().toLocaleDateString('es-ES', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
-      }),
-      studentName: studentName.trim() || undefined
-    };
-
+    const result = calculateHollandResult(answers, VOCATIONAL_QUESTIONS, studentName);
     onComplete(result);
   };
 
   if (!hasStarted) {
     return (
-      <div className="max-w-xl mx-auto px-4 py-8">
-        <div className="glass-card rounded-3xl p-6 sm:p-10 border border-slate-200/80 shadow-xl text-center">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-brand-600 to-indigo-500 text-white flex items-center justify-center mx-auto mb-6 shadow-md shadow-brand-500/30">
-            <Sparkles className="w-8 h-8" />
-          </div>
+      <div className="max-w-xl mx-auto px-4 py-8 sm:py-12">
+        <div className="glass-card rounded-3xl p-6 sm:p-10 border border-slate-200/80 shadow-2xl text-center relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-pink-200/30 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute bottom-0 left-0 w-64 h-64 bg-brand-200/30 rounded-full blur-3xl pointer-events-none" />
 
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900">
-            ¡Bienvenida a tu viaje vocacional!
-          </h2>
+          <div className="relative z-10">
+            <span className="text-5xl block mb-4 animate-bounce">✨🧭</span>
 
-          <p className="mt-3 text-slate-600 text-sm sm:text-base leading-relaxed">
-            Este test está diseñado especialmente para descubrir tus motivaciones más auténticas a través de 12 situaciones cotidianas y dilemas de vida.
-          </p>
+            <span className="inline-block px-3.5 py-1 rounded-full bg-pink-50 border border-pink-200 text-pink-600 text-xs font-bold uppercase tracking-wider mb-3">
+              Quiz Interactivo 2026
+            </span>
 
-          <div className="mt-6 text-left">
-            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
-              ¿Cuál es tu nombre? (Opcional)
-            </label>
-            <div className="relative">
-              <User className="w-5 h-5 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-              <input
-                type="text"
-                value={studentName}
-                onChange={(e) => setStudentName(e.target.value)}
-                placeholder="Ejemplo: Valentina, Sofía, Camila..."
-                className="w-full pl-11 pr-4 py-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent text-slate-800 placeholder-slate-400 text-sm"
-              />
+            <h2 className="text-2xl sm:text-4xl font-black text-slate-900 tracking-tight leading-tight">
+              Descubre tu Carrera Ideal sin Estrés
+            </h2>
+
+            <p className="mt-3 text-slate-600 text-sm sm:text-base leading-relaxed">
+              Cero preguntas aburridas de escuela. 10 dilemas rápidos para descubrir tu arquetipo y las carreras con mejor futuro para ti.
+            </p>
+
+            <div className="mt-6 text-left">
+              <label className="block text-xs font-extrabold text-slate-700 uppercase tracking-wider mb-2">
+                ¿Cómo te llamas? (Para personalizar tu Wrapped)
+              </label>
+              <div className="relative">
+                <User className="w-5 h-5 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  value={studentName}
+                  onChange={(e) => setStudentName(e.target.value)}
+                  placeholder="Tu nombre (ej. Valentina, Camila, Sofi...)"
+                  className="w-full pl-11 pr-4 py-3 rounded-2xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent text-slate-800 text-sm sm:text-base shadow-sm"
+                />
+              </div>
             </div>
-            <p className="text-xs text-slate-400 mt-1.5">
-              Personalizaremos tu informe y la conversación con tu coach Sofía.
-            </p>
-          </div>
 
-          <div className="mt-8 space-y-3">
-            <button
-              onClick={() => setHasStarted(true)}
-              className="w-full py-4 rounded-xl bg-gradient-to-r from-brand-600 to-indigo-600 text-white font-bold text-base shadow-lg shadow-brand-500/25 hover:shadow-brand-500/40 hover:scale-[1.01] transition-all flex items-center justify-center gap-2"
-            >
-              <span>Comenzar Preguntas</span>
-              <ArrowRight className="w-5 h-5" />
-            </button>
-            <p className="text-xs text-slate-500">
-              ⏱️ Toma aproximadamente 3 minutos • No hay respuestas correctas ni incorrectas.
-            </p>
+            <div className="mt-8 space-y-3">
+              <button
+                onClick={() => setHasStarted(true)}
+                className="w-full py-4 rounded-2xl bg-gradient-to-r from-pink-500 via-purple-600 to-indigo-600 text-white font-black text-base sm:text-lg shadow-lg shadow-pink-500/25 hover:shadow-pink-500/40 hover:scale-[1.02] transition-all flex items-center justify-center gap-2 group"
+              >
+                <span>Comenzar Quiz (2 min)</span>
+                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              </button>
+              <p className="text-xs text-slate-400 font-medium">
+                ⚡ Rápido, visual y 100% gratuito.
+              </p>
+            </div>
           </div>
         </div>
       </div>
@@ -143,75 +115,73 @@ export default function TestVocacional({ onComplete }: TestVocacionalProps) {
   const isAnswered = selectedAnswerIndex !== undefined;
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-6 sm:py-10">
-      {/* Progress Bar & Header */}
+    <div className="max-w-2xl mx-auto px-4 py-6 sm:py-10">
+      {/* Question Tracker Progress */}
       <div className="mb-6">
-        <div className="flex items-center justify-between text-xs sm:text-sm font-semibold text-slate-600 mb-2">
-          <span className="flex items-center gap-1.5 text-brand-700 font-bold">
-            <Sparkles className="w-4 h-4 text-brand-600" />
+        <div className="flex items-center justify-between text-xs sm:text-sm font-bold text-slate-600 mb-2">
+          <span className="flex items-center gap-1.5 text-pink-600 font-extrabold">
+            <span>{currentQuestion.emoji}</span>
             Pregunta {currentIndex + 1} de {totalQuestions}
           </span>
           <span className="text-slate-400">{progressPercent}% completado</span>
         </div>
         <div className="w-full h-2.5 bg-slate-200/80 rounded-full overflow-hidden">
           <div
-            className="h-full bg-gradient-to-r from-brand-500 to-indigo-600 rounded-full transition-all duration-300"
-            style={{ width: `${Math.max(5, progressPercent)}%` }}
+            className="h-full bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-600 rounded-full transition-all duration-300"
+            style={{ width: `${Math.max(10, progressPercent)}%` }}
           />
         </div>
       </div>
 
-      {/* Question Card */}
-      <div className="glass-card rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-lg">
-        {/* Category Pill */}
-        <span className="inline-block px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-brand-50 text-brand-700 border border-brand-200/60 mb-3">
+      {/* Main Question Card */}
+      <div className="glass-card rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-xl">
+        <span className="inline-block px-3 py-1 rounded-full text-[11px] font-extrabold uppercase tracking-wider bg-pink-50 text-pink-700 border border-pink-200/60 mb-2">
           {currentQuestion.category}
         </span>
 
-        {/* Scenario description */}
-        <p className="text-sm sm:text-base text-slate-500 font-medium italic mb-2">
-          {currentQuestion.scenario}
-        </p>
-
-        {/* Main Question */}
-        <h3 className="text-lg sm:text-2xl font-extrabold text-slate-900 leading-snug mb-6">
-          {currentQuestion.question}
+        <h3 className="text-xl sm:text-2xl font-black text-slate-900 leading-snug mb-1">
+          {currentQuestion.title}
         </h3>
 
-        {/* Options List */}
+        <p className="text-xs sm:text-sm text-slate-500 font-medium italic mb-6">
+          {currentQuestion.subtitle}
+        </p>
+
+        {/* Options Cards */}
         <div className="space-y-3">
           {currentQuestion.options.map((opt, idx) => {
             const isSelected = selectedAnswerIndex === idx;
             return (
-              <button
+              <div
                 key={idx}
-                type="button"
                 onClick={() => handleSelectOption(idx)}
-                className={`w-full text-left p-4 sm:p-4.5 rounded-2xl border transition-all flex items-start gap-3.5 group ${
+                className={`p-4 rounded-2xl border transition-all cursor-pointer flex items-center gap-3.5 group ${
                   isSelected
-                    ? 'border-brand-600 bg-brand-50/70 shadow-sm ring-2 ring-brand-500/20'
-                    : 'border-slate-200 bg-white hover:border-brand-300 hover:bg-slate-50/80'
+                    ? 'border-pink-500 bg-pink-50/80 shadow-md ring-2 ring-pink-500/20 scale-[1.01]'
+                    : 'border-slate-200 bg-white hover:border-pink-300 hover:bg-slate-50/70 hover:scale-[1.005]'
                 }`}
               >
-                <div
-                  className={`w-6 h-6 rounded-full flex-shrink-0 flex items-center justify-center mt-0.5 border text-xs font-bold transition-colors ${
-                    isSelected
-                      ? 'border-brand-600 bg-brand-600 text-white'
-                      : 'border-slate-300 text-slate-400 group-hover:border-brand-400'
-                  }`}
-                >
-                  {isSelected ? <Check className="w-3.5 h-3.5" /> : String.fromCharCode(65 + idx)}
-                </div>
+                <span className="text-2xl flex-shrink-0">{opt.emoji}</span>
+
                 <div className="flex-1">
-                  <p
-                    className={`text-sm sm:text-base leading-relaxed ${
-                      isSelected ? 'font-semibold text-brand-950' : 'text-slate-700'
-                    }`}
-                  >
+                  <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded ${
+                    isSelected ? 'bg-pink-200 text-pink-800' : 'bg-slate-100 text-slate-500'
+                  }`}>
+                    {opt.tag}
+                  </span>
+                  <p className={`text-xs sm:text-sm mt-1 leading-relaxed ${
+                    isSelected ? 'font-bold text-slate-900' : 'text-slate-700 font-medium'
+                  }`}>
                     {opt.text}
                   </p>
                 </div>
-              </button>
+
+                <div className={`w-5 h-5 rounded-full border flex items-center justify-center flex-shrink-0 transition-colors ${
+                  isSelected ? 'border-pink-500 bg-pink-500 text-white' : 'border-slate-300'
+                }`}>
+                  {isSelected && <Check className="w-3 h-3 stroke-[3]" />}
+                </div>
+              </div>
             );
           })}
         </div>
@@ -221,26 +191,26 @@ export default function TestVocacional({ onComplete }: TestVocacionalProps) {
           <button
             onClick={handlePrev}
             disabled={currentIndex === 0}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all ${
+            className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all ${
               currentIndex === 0
-                ? 'opacity-40 cursor-not-allowed text-slate-400'
-                : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+                ? 'opacity-30 cursor-not-allowed text-slate-400'
+                : 'text-slate-600 hover:bg-slate-100'
             }`}
           >
             <ArrowLeft className="w-4 h-4" />
-            <span>Anterior</span>
+            <span>Atrás</span>
           </button>
 
           <button
             onClick={handleNext}
             disabled={!isAnswered}
-            className={`flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-bold shadow-md transition-all ${
+            className={`flex items-center gap-2 px-6 py-3 rounded-2xl text-xs sm:text-sm font-black shadow-md transition-all ${
               isAnswered
-                ? 'bg-gradient-to-r from-brand-600 to-indigo-600 text-white shadow-brand-500/25 hover:shadow-brand-500/40 hover:scale-[1.02]'
+                ? 'bg-gradient-to-r from-pink-500 to-indigo-600 text-white shadow-pink-500/25 hover:shadow-pink-500/40 hover:scale-105'
                 : 'bg-slate-200 text-slate-400 cursor-not-allowed shadow-none'
             }`}
           >
-            <span>{currentIndex === totalQuestions - 1 ? 'Ver Mi Perfil Vocacional ✨' : 'Siguiente'}</span>
+            <span>{currentIndex === totalQuestions - 1 ? '✨ Revelar Mi Career Wrapped' : 'Siguiente'}</span>
             <ArrowRight className="w-4 h-4" />
           </button>
         </div>

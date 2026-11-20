@@ -4,20 +4,21 @@ import React, { useState } from 'react';
 import Navbar from '@/components/Navbar';
 import Hero from '@/components/Hero';
 import TestVocacional from '@/components/TestVocacional';
-import ResultReport from '@/components/ResultReport';
+import CareerWrapped from '@/components/CareerWrapped';
 import CareerExplorer from '@/components/CareerExplorer';
 import CareerModal from '@/components/CareerModal';
 import AICoach from '@/components/AICoach';
 import ActionPlan from '@/components/ActionPlan';
 import IkigaiVisualizer from '@/components/IkigaiVisualizer';
 import { AssessmentResult, Career } from '@/types';
-import { Compass, Heart, Sparkles, Github } from 'lucide-react';
+import { Sparkles, Heart } from 'lucide-react';
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState<string>('test');
   const [result, setResult] = useState<AssessmentResult | null>(null);
   const [selectedCareer, setSelectedCareer] = useState<Career | null>(null);
   const [coachTopic, setCoachTopic] = useState<string>('');
+  const [favorites, setFavorites] = useState<string[]>(['ux-ui-design']);
 
   const handleTestComplete = (res: AssessmentResult) => {
     setResult(res);
@@ -26,15 +27,19 @@ export default function Home() {
   };
 
   const handleResetTest = () => {
-    if (window.confirm('¿Deseas reiniciar el test vocacional y comenzar desde cero?')) {
+    if (window.confirm('¿Quieres repetir tu quiz y generar un nuevo Wrapped?')) {
       setResult(null);
       setActiveTab('test');
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
-  const handleSelectCareerFromReport = (career: Career) => {
-    setSelectedCareer(career);
+  const handleToggleFavorite = (careerId: string) => {
+    setFavorites((prev) =>
+      prev.includes(careerId)
+        ? prev.filter((id) => id !== careerId)
+        : [...prev, careerId]
+    );
   };
 
   const handleAskCoachAboutCareer = (careerTitle: string) => {
@@ -44,13 +49,14 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col justify-between selection:bg-brand-100 selection:text-brand-900">
+    <div className="min-h-screen flex flex-col justify-between selection:bg-pink-100 selection:text-pink-900 bg-slate-50">
       <div>
         <Navbar
           activeTab={activeTab}
           setActiveTab={setActiveTab}
           result={result}
           onResetTest={handleResetTest}
+          favoritesCount={favorites.length}
         />
 
         <main className="pb-16">
@@ -59,7 +65,7 @@ export default function Home() {
               {!result && (
                 <Hero
                   onStartTest={() => {
-                    const el = document.getElementById('test-section');
+                    const el = document.getElementById('quiz-section');
                     el?.scrollIntoView({ behavior: 'smooth' });
                   }}
                   onExploreCareers={() => setActiveTab('careers')}
@@ -67,13 +73,15 @@ export default function Home() {
                 />
               )}
 
-              <div id="test-section">
+              <div id="quiz-section">
                 {result ? (
-                  <ResultReport
+                  <CareerWrapped
                     result={result}
                     onOpenCoach={() => setActiveTab('coach')}
-                    onSelectCareer={handleSelectCareerFromReport}
+                    onSelectCareer={(career) => setSelectedCareer(career)}
                     onExploreMore={() => setActiveTab('careers')}
+                    onToggleFavorite={handleToggleFavorite}
+                    favorites={favorites}
                   />
                 ) : (
                   <>
@@ -87,11 +95,13 @@ export default function Home() {
 
           {activeTab === 'result' && result && (
             <div>
-              <ResultReport
+              <CareerWrapped
                 result={result}
                 onOpenCoach={() => setActiveTab('coach')}
-                onSelectCareer={handleSelectCareerFromReport}
+                onSelectCareer={(career) => setSelectedCareer(career)}
                 onExploreMore={() => setActiveTab('careers')}
+                onToggleFavorite={handleToggleFavorite}
+                favorites={favorites}
               />
               <IkigaiVisualizer />
             </div>
@@ -100,7 +110,9 @@ export default function Home() {
           {activeTab === 'careers' && (
             <CareerExplorer
               onSelectCareer={(career) => setSelectedCareer(career)}
-              recommendedCode={result?.codeString}
+              favorites={favorites}
+              onToggleFavorite={handleToggleFavorite}
+              matchedCareers={result?.matchedCareers}
             />
           )}
 
@@ -121,30 +133,32 @@ export default function Home() {
         </main>
       </div>
 
-      {/* Career Details Modal */}
+      {/* Career Details Modal with 'Un Día en la Vida' */}
       <CareerModal
         career={selectedCareer}
         onClose={() => setSelectedCareer(null)}
         onAskCoachAboutCareer={handleAskCoachAboutCareer}
+        isFavorite={selectedCareer ? favorites.includes(selectedCareer.id) : false}
+        onToggleFavorite={handleToggleFavorite}
       />
 
-      {/* Global Footer */}
-      <footer className="w-full border-t border-slate-200/80 bg-white/70 py-8 text-center text-xs text-slate-500 no-print">
+      {/* Aesthetic Footer */}
+      <footer className="w-full border-t border-slate-200/80 bg-white/70 py-6 text-center text-xs text-slate-500 no-print">
         <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2 font-bold text-slate-700">
-            <Compass className="w-4 h-4 text-brand-600" />
-            <span>BrújulaPro • Orientación Vocacional</span>
+          <div className="flex items-center gap-2 font-black text-slate-700">
+            <span>✨</span>
+            <span>BrújulaPro • Orientación Vocacional 2026</span>
           </div>
 
           <p className="text-slate-400">
-            Hecho con mucho cariño para guiar e inspirar en cada paso hacia la universidad.
+            Hecho con mucho cariño para inspirar con calidez el camino universitario.
           </p>
 
-          <div className="flex items-center gap-3">
-            <span className="px-2.5 py-1 rounded-full bg-slate-100 text-slate-600 font-medium">
-              Vercel Ready ⚡
+          <div className="flex items-center gap-2">
+            <span className="px-2.5 py-0.5 rounded-full bg-pink-50 text-pink-700 font-bold border border-pink-200">
+              Gen-Z Edition 🚀
             </span>
-            <span className="px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 font-bold border border-emerald-200">
+            <span className="px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 font-bold border border-emerald-200">
               100% Gratis
             </span>
           </div>

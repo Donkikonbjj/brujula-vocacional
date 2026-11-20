@@ -4,7 +4,9 @@ export interface RIASECTrait {
   code: RIASECCode;
   name: string;
   badge: string;
+  emoji: string;
   color: string;
+  gradient: string;
   description: string;
   strengths: string[];
   workEnvironments: string[];
@@ -12,31 +14,43 @@ export interface RIASECTrait {
 
 export interface QuestionOption {
   text: string;
-  icon?: string;
+  emoji: string;
+  tag: string;
   scores: Partial<Record<RIASECCode, number>>;
-  description?: string;
 }
 
 export interface Question {
   id: number;
+  emoji: string;
   category: string;
-  scenario: string;
-  question: string;
+  title: string;
+  subtitle: string;
   options: QuestionOption[];
+}
+
+export interface DayInTheLifeItem {
+  time: string;
+  emoji: string;
+  activity: string;
+  description: string;
 }
 
 export interface Career {
   id: string;
   title: string;
   category: string;
+  emoji: string;
   matchHolland: RIASECCode[];
   tags: string[];
   summary: string;
   fullDescription: string;
+  vibe: string; // Gen Z vibe summary (ej: "100% digital, estética y tecnología")
   dailyTasks: string[];
+  dayTimeline: DayInTheLifeItem[];
   keySkills: string[];
   growthOutlook: string;
   salaryLevel: string;
+  remoteFriendly: boolean;
   typicalRoles: string[];
   pros: string[];
   challenges: string[];
@@ -50,6 +64,18 @@ export interface Career {
   };
 }
 
+export interface Archetype {
+  id: string;
+  title: string;
+  subtitle: string;
+  emoji: string;
+  gradient: string;
+  description: string;
+  superpowers: { name: string; emoji: string; desc: string }[];
+  vibeQuote: string;
+  idealCareers: string[];
+}
+
 export interface AssessmentResult {
   scores: Record<RIASECCode, number>;
   topCodes: RIASECCode[];
@@ -57,7 +83,8 @@ export interface AssessmentResult {
   primaryTrait: RIASECTrait;
   secondaryTrait: RIASECTrait;
   tertiaryTrait: RIASECTrait;
-  matchedCareers: Career[];
+  archetype: Archetype;
+  matchedCareers: (Career & { matchPercent: number })[];
   completedAt: string;
   studentName?: string;
 }
@@ -67,5 +94,4 @@ export interface ChatMessage {
   role: 'user' | 'assistant';
   content: string;
   timestamp: string;
-  suggestedQuestions?: string[];
 }

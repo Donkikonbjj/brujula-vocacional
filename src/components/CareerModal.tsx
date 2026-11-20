@@ -1,194 +1,261 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Career } from '@/types';
-import { X, CheckCircle2, AlertCircle, BookOpen, ExternalLink, Sparkles, TrendingUp, DollarSign, Heart, Compass } from 'lucide-react';
+import { X, Heart, Sparkles, TrendingUp, DollarSign, BookOpen, Clock, CheckCircle2, AlertCircle } from 'lucide-react';
 
 interface CareerModalProps {
   career: Career | null;
   onClose: () => void;
   onAskCoachAboutCareer: (careerTitle: string) => void;
+  isFavorite: boolean;
+  onToggleFavorite: (careerId: string) => void;
 }
 
-export default function CareerModal({ career, onClose, onAskCoachAboutCareer }: CareerModalProps) {
+export default function CareerModal({
+  career,
+  onClose,
+  onAskCoachAboutCareer,
+  isFavorite,
+  onToggleFavorite
+}: CareerModalProps) {
+  const [activeTab, setActiveTab] = useState<'timeline' | 'skills' | 'money' | 'try'>('timeline');
+
   if (!career) return null;
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6 animate-fadeIn">
-      <div 
-        className="relative w-full max-w-3xl glass-card bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden max-h-[90vh] flex flex-col"
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/70 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 animate-fadeIn">
+      <div
+        className="relative w-full max-w-2xl bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden max-h-[92vh] flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Header Banner */}
-        <div className="p-6 sm:p-8 bg-gradient-to-r from-brand-600 via-indigo-600 to-purple-600 text-white relative">
-          <button
-            onClick={onClose}
-            className="absolute top-5 right-5 p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
-          >
-            <X className="w-5 h-5" />
-          </button>
+        {/* Modal Header */}
+        <div className="p-6 sm:p-7 bg-gradient-to-r from-slate-900 via-indigo-950 to-purple-950 text-white relative">
+          <div className="flex items-center justify-between gap-4 mb-3">
+            <div className="flex items-center gap-2">
+              <span className="text-2xl">{career.emoji}</span>
+              <span className="text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full bg-white/10 backdrop-blur text-pink-300">
+                {career.category}
+              </span>
+            </div>
 
-          <div className="flex flex-wrap items-center gap-2 mb-3">
-            <span className="text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full bg-white/20 backdrop-blur">
-              {career.category}
-            </span>
-            <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-400/20 text-emerald-100 border border-emerald-300/30">
-              Demanda {career.growthOutlook}
-            </span>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => onToggleFavorite(career.id)}
+                className={`p-2.5 rounded-full transition-all ${
+                  isFavorite
+                    ? 'bg-pink-500 text-white shadow-md shadow-pink-500/30 scale-110'
+                    : 'bg-white/10 hover:bg-white/20 text-white'
+                }`}
+                title={isFavorite ? 'En tus favoritos' : 'Guardar en favoritas'}
+              >
+                <Heart className={`w-4 h-4 ${isFavorite ? 'fill-white' : ''}`} />
+              </button>
+
+              <button
+                onClick={onClose}
+                className="p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
           </div>
 
           <h2 className="text-2xl sm:text-3xl font-black">{career.title}</h2>
-          <p className="mt-2 text-brand-100 text-sm sm:text-base leading-relaxed max-w-2xl">
-            {career.summary}
+          <p className="mt-1 text-xs sm:text-sm text-pink-300 font-semibold">
+            ✨ {career.vibe}
           </p>
 
-          <div className="mt-4 flex flex-wrap gap-2">
-            {career.tags.map((tag) => (
-              <span key={tag} className="text-xs px-2.5 py-0.5 rounded-md bg-white/10 text-white/90">
-                #{tag}
-              </span>
-            ))}
+          {/* Modal Tab Navigation */}
+          <div className="mt-6 flex items-center gap-1.5 border-b border-white/10 pb-1 overflow-x-auto scrollbar-none">
+            {[
+              { id: 'timeline', label: 'Un Día en la Vida', icon: Clock },
+              { id: 'skills', label: 'Habilidades & Pros', icon: CheckCircle2 },
+              { id: 'money', label: 'Sueldos & Futuro', icon: DollarSign },
+              { id: 'try', label: 'Probar Gratis Hoy', icon: BookOpen },
+            ].map((tab) => {
+              const Icon = tab.icon;
+              const isActive = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id as any)}
+                  className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
+                    isActive
+                      ? 'bg-white text-slate-900 shadow-sm'
+                      : 'text-slate-300 hover:text-white hover:bg-white/10'
+                  }`}
+                >
+                  <Icon className="w-3.5 h-3.5" />
+                  {tab.label}
+                </button>
+              );
+            })}
           </div>
         </div>
 
-        {/* Scrollable Content */}
-        <div className="p-6 sm:p-8 overflow-y-auto space-y-8 flex-1">
-          {/* Quick Metrics Bar */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 rounded-2xl bg-slate-50 border border-slate-200/80">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center">
-                <DollarSign className="w-5 h-5" />
+        {/* Modal Tab Content */}
+        <div className="p-6 overflow-y-auto flex-1 space-y-6">
+
+          {/* TAB 1: UN DÍA EN LA VIDA */}
+          {activeTab === 'timeline' && (
+            <div className="space-y-4">
+              <div className="p-3.5 rounded-2xl bg-brand-50 border border-brand-100 text-xs text-brand-900 font-medium">
+                ⏱️ <strong>Así luce una jornada típica:</strong> Ni aburrida ni estresante; conoce el ritmo de trabajo real:
               </div>
-              <div>
-                <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block">Nivel Salarial</span>
-                <span className="text-sm font-bold text-slate-800">{career.salaryLevel}</span>
-              </div>
-            </div>
 
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-indigo-100 text-indigo-700 flex items-center justify-center">
-                <TrendingUp className="w-5 h-5" />
-              </div>
-              <div>
-                <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block">Proyección Futura</span>
-                <span className="text-sm font-bold text-slate-800">Crecimiento {career.growthOutlook}</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Full Description */}
-          <div>
-            <h3 className="text-sm font-bold uppercase tracking-wider text-slate-400 mb-2">Visión General</h3>
-            <p className="text-sm sm:text-base text-slate-700 leading-relaxed">
-              {career.fullDescription}
-            </p>
-          </div>
-
-          {/* Daily Routine Tasks */}
-          <div>
-            <h3 className="text-base font-bold text-slate-900 mb-3 flex items-center gap-2">
-              <Compass className="w-5 h-5 text-brand-600" />
-              ¿Cómo es un día típico en esta profesión?
-            </h3>
-            <ul className="space-y-2">
-              {career.dailyTasks.map((task, idx) => (
-                <li key={idx} className="text-xs sm:text-sm text-slate-700 flex items-start gap-2.5 p-2 rounded-lg bg-slate-50">
-                  <span className="w-5 h-5 rounded-full bg-brand-100 text-brand-700 font-bold text-xs flex items-center justify-center flex-shrink-0 mt-0.5">
-                    {idx + 1}
-                  </span>
-                  <span>{task}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Pros vs Challenges */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="p-4 rounded-2xl bg-emerald-50/70 border border-emerald-200">
-              <h4 className="text-xs font-bold uppercase tracking-wider text-emerald-800 mb-2.5 flex items-center gap-1.5">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                Lo que más te encantará (Pros):
-              </h4>
-              <ul className="space-y-2">
-                {career.pros.map((p, idx) => (
-                  <li key={idx} className="text-xs text-emerald-950 flex items-start gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 mt-1.5 flex-shrink-0" />
-                    <span>{p}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <div className="p-4 rounded-2xl bg-amber-50/70 border border-amber-200">
-              <h4 className="text-xs font-bold uppercase tracking-wider text-amber-800 mb-2.5 flex items-center gap-1.5">
-                <AlertCircle className="w-4 h-4 text-amber-600" />
-                Los retos a tomar en cuenta:
-              </h4>
-              <ul className="space-y-2">
-                {career.challenges.map((c, idx) => (
-                  <li key={idx} className="text-xs text-amber-950 flex items-start gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-amber-500 mt-1.5 flex-shrink-0" />
-                    <span>{c}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-
-          {/* Key Skills & Degrees */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            <div>
-              <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Habilidades Clave</h4>
-              <div className="flex flex-wrap gap-1.5">
-                {career.keySkills.map((skill, idx) => (
-                  <span key={idx} className="text-xs px-2.5 py-1 rounded-lg bg-indigo-50 text-indigo-700 font-medium border border-indigo-100">
-                    {skill}
-                  </span>
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Carreras Universitarias Típicas</h4>
-              <ul className="space-y-1">
-                {career.suggestedDegrees.map((deg, idx) => (
-                  <li key={idx} className="text-xs text-slate-700 font-medium flex items-center gap-1.5">
-                    <BookOpen className="w-3.5 h-3.5 text-slate-400" />
-                    <span>{deg}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-
-          {/* Free learning resources */}
-          {career.freeResources && career.freeResources.length > 0 && (
-            <div className="p-4 rounded-2xl bg-gradient-to-r from-brand-50 to-indigo-50 border border-brand-200">
-              <h4 className="text-xs font-bold uppercase tracking-wider text-brand-800 mb-2 flex items-center gap-1.5">
-                <Sparkles className="w-4 h-4 text-brand-600" />
-                Empieza a explorar gratis hoy mismo:
-              </h4>
-              <div className="space-y-1.5">
-                {career.freeResources.map((res, idx) => (
-                  <div key={idx} className="text-xs text-slate-800 flex items-center justify-between">
-                    <span className="font-semibold">{res.title}</span>
-                    <span className="text-[11px] px-2 py-0.5 rounded bg-white border border-brand-200 text-brand-700 font-bold">
-                      {res.type}
+              <div className="space-y-3 relative before:absolute before:inset-0 before:left-4 before:w-0.5 before:bg-slate-200">
+                {career.dayTimeline.map((item, idx) => (
+                  <div key={idx} className="relative flex items-start gap-3.5 pl-1">
+                    <span className="w-7 h-7 rounded-full bg-white border-2 border-brand-500 shadow-sm flex items-center justify-center text-sm flex-shrink-0 z-10">
+                      {item.emoji}
                     </span>
+                    <div className="flex-1 p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80">
+                      <div className="flex items-center justify-between">
+                        <h4 className="font-bold text-xs sm:text-sm text-slate-900">{item.activity}</h4>
+                        <span className="text-[11px] font-mono text-brand-600 font-bold">{item.time}</span>
+                      </div>
+                      <p className="text-xs text-slate-600 mt-1 leading-relaxed">
+                        {item.description}
+                      </p>
+                    </div>
                   </div>
                 ))}
               </div>
             </div>
           )}
+
+          {/* TAB 2: HABILIDADES & PROS */}
+          {activeTab === 'skills' && (
+            <div className="space-y-5">
+              <div>
+                <h4 className="text-xs font-extrabold uppercase tracking-wider text-slate-400 mb-2">
+                  Tus Superpoderes Clave para esta Carrera:
+                </h4>
+                <div className="flex flex-wrap gap-2">
+                  {career.keySkills.map((s, idx) => (
+                    <span key={idx} className="text-xs px-3 py-1.5 rounded-xl bg-purple-50 text-purple-700 font-semibold border border-purple-200">
+                      ✨ {s}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-emerald-800 mb-2 flex items-center gap-1.5">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                  Lo que más amarás (Pros):
+                </h4>
+                <ul className="space-y-1.5">
+                  {career.pros.map((p, idx) => (
+                    <li key={idx} className="text-xs text-emerald-950 flex items-start gap-2">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 mt-1.5 flex-shrink-0" />
+                      <span>{p}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-amber-800 mb-2 flex items-center gap-1.5">
+                  <AlertCircle className="w-4 h-4 text-amber-600" />
+                  Los retos a considerar:
+                </h4>
+                <ul className="space-y-1.5">
+                  {career.challenges.map((c, idx) => (
+                    <li key={idx} className="text-xs text-amber-950 flex items-start gap-2">
+                      <span className="w-1.5 h-1.5 rounded-full bg-amber-500 mt-1.5 flex-shrink-0" />
+                      <span>{c}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 3: SUELDOS & FUTURO */}
+          {activeTab === 'money' && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
+                    Nivel Salarial Estimado
+                  </span>
+                  <span className="text-base font-black text-slate-900 mt-1 block">
+                    {career.salaryLevel}
+                  </span>
+                  <span className="text-xs text-emerald-600 font-medium mt-1 block">
+                    {career.remoteFriendly ? '🌍 Con opciones remotas en USD' : '🏥 En hospitales/clínicas/estudios'}
+                  </span>
+                </div>
+
+                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
+                    Demanda a Futuro (2026+)
+                  </span>
+                  <span className="text-base font-black text-slate-900 mt-1 block">
+                    {career.growthOutlook}
+                  </span>
+                  <span className="text-xs text-indigo-600 font-medium mt-1 block">
+                    Alta prioridad global
+                  </span>
+                </div>
+              </div>
+
+              <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200">
+                <h4 className="text-xs font-extrabold uppercase tracking-wider text-slate-400 mb-2">
+                  Carreras universitarias sugeridas:
+                </h4>
+                <div className="flex flex-wrap gap-2">
+                  {career.suggestedDegrees.map((deg, idx) => (
+                    <span key={idx} className="text-xs px-3 py-1 rounded-lg bg-white border border-slate-200 text-slate-700 font-semibold">
+                      🎓 {deg}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 4: PROBAR GRATIS HOY */}
+          {activeTab === 'try' && (
+            <div className="space-y-4">
+              <div className="p-4 rounded-2xl bg-gradient-to-r from-pink-50 to-purple-50 border border-pink-200">
+                <h4 className="text-xs font-bold text-pink-900 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                  <Sparkles className="w-4 h-4 text-pink-600" />
+                  Prueba la materia antes de inscribirte a la carrera:
+                </h4>
+                <p className="text-xs text-slate-600 mb-4 leading-relaxed">
+                  Toma 2 o 3 horas este fin de semana en uno de estos cursos gratuitos. Si te diviertes y te entusiasma, ¡sabrás con total seguridad que es para ti!
+                </p>
+
+                <div className="space-y-2">
+                  {career.freeResources.map((res, idx) => (
+                    <div key={idx} className="p-3 rounded-xl bg-white border border-pink-200/80 flex items-center justify-between text-xs">
+                      <span className="font-bold text-slate-800">{res.title}</span>
+                      <span className="px-2 py-0.5 rounded bg-pink-100 text-pink-700 font-bold text-[10px]">
+                        {res.type}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
-        {/* Modal Footer Actions */}
-        <div className="p-4 sm:p-6 bg-slate-50 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-3">
+        {/* Modal Footer */}
+        <div className="p-4 bg-slate-50 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-3">
           <button
-            onClick={onClose}
-            className="w-full sm:w-auto px-5 py-2.5 rounded-xl border border-slate-300 text-slate-600 font-semibold text-xs sm:text-sm hover:bg-slate-100 transition-colors"
+            onClick={() => onToggleFavorite(career.id)}
+            className={`w-full sm:w-auto px-4 py-2.5 rounded-xl border text-xs font-bold flex items-center justify-center gap-1.5 transition-colors ${
+              isFavorite
+                ? 'border-pink-300 bg-pink-50 text-pink-700'
+                : 'border-slate-300 text-slate-600 hover:bg-slate-100'
+            }`}
           >
-            Cerrar Ficha
+            <Heart className={`w-3.5 h-3.5 ${isFavorite ? 'fill-pink-500 text-pink-500' : ''}`} />
+            <span>{isFavorite ? 'En tus Favoritas' : 'Guardar en Favoritas'}</span>
           </button>
 
           <button
@@ -196,10 +263,10 @@ export default function CareerModal({ career, onClose, onAskCoachAboutCareer }: 
               onClose();
               onAskCoachAboutCareer(career.title);
             }}
-            className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-gradient-to-r from-brand-600 to-indigo-600 text-white font-bold text-xs sm:text-sm shadow-md hover:scale-[1.02] transition-all flex items-center justify-center gap-2"
+            className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-gradient-to-r from-pink-500 to-indigo-600 text-white font-bold text-xs sm:text-sm shadow-md hover:scale-[1.02] transition-all flex items-center justify-center gap-2"
           >
             <Sparkles className="w-4 h-4" />
-            <span>Consultar sobre {career.title} con Sofía</span>
+            <span>Preguntarle a Sofía sobre {career.title}</span>
           </button>
         </div>
       </div>
